@@ -77,3 +77,5 @@ This creates several things in AWS:
 * DynamoDB
 * Cloudfront Distribution
 * Connections among S3, Cloudfront, DynamoDB and API Gateway.
+ 
+ test
