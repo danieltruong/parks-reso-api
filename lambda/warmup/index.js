@@ -8,22 +8,18 @@ const configDefaults = {
     funcName: null,
     funcVersion: null,
     concurrency: 'concurrency', // default concurrency field
-    test: 'test', // default test flag
     log: true, // default logging to true
     correlationId: id, // default the correlationId
     delay: 75 // default the delay to 75ms
 }
 
-exports.handler = async (event, cfg = {}) => {
-
-    let config = Object.assign({}, configDefaults, cfg);
-
-    if (event && event[config.funcName] && event[config.funcVersion]) {
-
-        let concurrency = event[config.concurrency]
-            && !isNaN(event[config.concurrency])
-            && event[config.concurrency] > 1
-            ? event[config.concurrency] : 1;
+exports.handler = async (event, context) => {
+    let config = Object.assign({}, configDefaults, context, event);
+    if (config.funcName && config.funcVersion) {
+        let concurrency = config.concurrency
+            && !isNaN(config.concurrency)
+            && config.concurrency > 1
+            ? config.concurrency : 1;
 
         let invokeCount = event['__WARMER_INVOCATION__']
             && !isNaN(event['__WARMER_INVOCATION__'])
@@ -36,26 +32,27 @@ exports.handler = async (event, cfg = {}) => {
         let correlationId = event['__WARMER_CORRELATIONID__']
             ? event['__WARMER_CORRELATIONID__'] : config.correlationId;
 
+        const lastAccess = Date.now();
+
         // Create log record
         let log = {
             action: 'warmer',
-            function: event[config.funcName] + ':' + event[config.funcVersion],
+            function: config.funcName + ':' + config.funcVersion,
             id,
             correlationId,
             count: invokeCount,
             concurrency: invokeTotal,
-            warm,
             lastAccessed: lastAccess,
             lastAccessedSeconds: lastAccess === null ? null : ((Date.now() - lastAccess) / 1000).toFixed(1)
         };
 
         // Log it
-        if (event[config.log]) {
+        if (config.log) {
             console.log(log);
         }
 
         // Fan out if concurrency is set higher than 1
-        if (concurrency > 1 && !event[config.test]) {
+        if (concurrency > 1) {
             // init promise array
             let invocations = [];
 
@@ -64,7 +61,7 @@ exports.handler = async (event, cfg = {}) => {
 
                 // Set the params and wait for the final function to finish
                 let params = {
-                    FunctionName: event[config.funcName] + ':' + event[config.funcVersion],
+                    FunctionName: config.funcName + ':' + config.funcVersion,
                     InvocationType: i === concurrency ? 'RequestResponse' : 'Event',
                     LogType: 'None',
                     Payload: Buffer.from(JSON.stringify({
