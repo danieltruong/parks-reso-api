@@ -11,3 +11,11 @@ exports.sendResponse = function (code, data, context) {
   };
   return response;
 };
+
+exports.checkWarmup = function (event) {
+  if (event?.warmup === true) {
+    return true;
+  } else {
+    return false;
+  }
+}
