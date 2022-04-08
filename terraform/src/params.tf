@@ -33,3 +33,11 @@ data "aws_ssm_parameter" "s3_bucket_data" {
 data "aws_ssm_parameter" "public_url" {
   name = "/parks-reso-public/url"
 }
+
+data "aws_ssm_parameter" "sso_issuer" {
+  name = "/parks-reso-api/sso-issuer"
+}
+
+data "aws_ssm_parameter" "sso_jwksuri" {
+  name = "/parks-reso-api/sso-jwksuri"
+}
