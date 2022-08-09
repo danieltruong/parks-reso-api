@@ -18,10 +18,10 @@ async function setFacilityLock(pk, sk) {
     ReturnValues: 'ALL_NEW'
   };
   try {
+    logger.debug('facilityLockObject', facilityLockObject);
     const { Attributes } = await dynamodb.updateItem(facilityLockObject).promise();
     return AWS.DynamoDB.Converter.unmarshall(Attributes);
   } catch (error) {
-    logger.error('Error in setFacilityLock', facilityLockObject);
     logger.error(error);
     throw {
       msg: 'This item is being updated by someone else. Please try again later.',
@@ -44,6 +44,7 @@ async function unlockFacility(pk, sk) {
       UpdateExpression: 'SET isUpdating = :isUpdating',
       ReturnValues: 'ALL_NEW'
     };
+    logger.debug('facilityLockObject', facilityLockObject);
     await dynamodb.updateItem(facilityLockObject).promise();
   } catch (error) {
     logger.error(error);

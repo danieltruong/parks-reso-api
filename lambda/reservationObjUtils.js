@@ -54,7 +54,7 @@ async function processReservationObjects(resObjs, timesToUpdate, timesToRemove) 
 
       if (timeToUpdate.capacityToSet == null && timeToUpdate.modifierToSet == null) {
         logger.error('Neither a new base capacity or a new modifier was provided. Skipping.');
-        break;
+        continue;
       }
 
       const oldResAvailability = resObj.capacities[timeToUpdate.time].availablePasses;
@@ -69,7 +69,7 @@ async function processReservationObjects(resObjs, timesToUpdate, timesToRemove) 
 
       if (newBaseCapacity + newModifier < 0) {
         logger.error('New total capacity cannot be negative');
-        break;
+        continue;
       }
 
       //a1 = a0 + c1 - c0 + m1 - m0 + f(p)
@@ -198,7 +198,7 @@ async function reverseOverbookedPasses(passes, newResAvailability) {
   for (let i = 0; i < passes.length; i++) {
     const pass = passes[i];
     if (passTally + pass.numberOfGuests > newResAvailability) {
-      break;
+      continue;
     }
     passTally += pass.numberOfGuests;
 
@@ -297,7 +297,7 @@ async function getOverbookedPassSet(passes, numberOfPassesOverbooked) {
     cancelledGuestTally += pass.numberOfGuests;
     overbookObj.overbookedPasses.push(pass);
     if (numberOfPassesOverbooked <= cancelledGuestTally) {
-      break;
+      continue;
     }
   }
   overbookObj.remainder = cancelledGuestTally - numberOfPassesOverbooked;
